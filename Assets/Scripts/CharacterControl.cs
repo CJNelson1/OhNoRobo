@@ -6,26 +6,22 @@ public class CharacterControl : MonoBehaviour
 {
     public bool facingRight = true; // For determining which way the player is currently facing.
 
+    [SerializeField] private LayerMask platformLayerMask;
     [SerializeField] private float maxSpeed = 10f; // The fastest the player can travel in the x axis.
     [SerializeField] private float jumpForce = 400f; // Amount of force added when the player jumps.	
-
     [SerializeField] private bool airControl = false; // Whether or not a player can steer while jumping;
-    [SerializeField] private LayerMask whatIsGround; // A mask determining what is ground to the character
+    [SerializeField] private int maxJump = 2;
 
-    private Transform groundCheck; // A position marking where to check if the player is grounded.
-    private float groundedRadius = .2f; // Radius of the overlap circle to determine if grounded
-    private bool grounded = false; // Whether or not the player is grounded.
-    private Transform ceilingCheck; // A position marking where to check for ceilings
-    private float ceilingRadius = .01f; // Radius of the overlap circle to determine if the player can stand up
-    
 
+    private CapsuleCollider2D capsuleCollider2d;
     private bool jump;
+    private int jumpCount;
 
     private void Awake()
     {
         // Setting up references.
-        groundCheck = transform.Find("GroundCheck");
-        ceilingCheck = transform.Find("CeilingCheck");
+        capsuleCollider2d = transform.GetComponent<CapsuleCollider2D>();
+        jumpCount = maxJump;
     }
 
 
@@ -49,6 +45,8 @@ public class CharacterControl : MonoBehaviour
 
     public void Move(float move, bool jump)
     {
+        bool grounded = IsGrounded();
+        if (grounded) jumpCount = maxJump;
         //only control the player if grounded or airControl is turned on
         if (grounded || airControl)
         {
@@ -65,14 +63,26 @@ public class CharacterControl : MonoBehaviour
                 Flip();
         }
         // If the player should jump...
-        if (jump)
+        if (jump && grounded)
         {
             // Add a vertical force to the player.
-            grounded = false;
             GetComponent<Rigidbody2D>().AddForce(new Vector2(0f, jumpForce));
+            jumpCount -= 1;
+        }
+        else if (jump && !grounded && jumpCount > 0)
+        {
+            GetComponent<Rigidbody2D>().AddForce(new Vector2(0f, jumpForce));
+            jumpCount -= 1;
         }
     }
 
+    private bool IsGrounded()
+    {
+        float extraHeightHit = .1f;
+        RaycastHit2D raycastHit = Physics2D.BoxCast(capsuleCollider2d.bounds.center, capsuleCollider2d.bounds.size, 0f, Vector2.down, extraHeightHit, platformLayerMask);
+
+        return raycastHit.collider != null;
+    }
 
     private void Flip()
     {

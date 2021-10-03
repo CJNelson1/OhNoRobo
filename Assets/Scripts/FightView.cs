@@ -237,6 +237,8 @@ public class FightView : MonoBehaviour
             make (object) unstable (things at random?) if - good robot lost the action
             every other action that occurs
             notify unstable chances to the Map to keep a track
+
+            
         */
 
         CheckGameOver();
