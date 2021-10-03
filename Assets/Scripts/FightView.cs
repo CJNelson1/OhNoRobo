@@ -233,6 +233,11 @@ public class FightView : MonoBehaviour
     private void FinishRound()
     {
         // Make something unstable???
+        /* Working on it in the morning -- 
+            make (object) unstable (things at random?) if - good robot lost the action
+            every other action that occurs
+            notify unstable chances to the Map to keep a track
+        */
 
         CheckGameOver();
 
