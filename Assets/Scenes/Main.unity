@@ -656,12 +656,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1384855619}
-  m_LocalRotation: {x: 0, y: 0, z: 0.00017452026, w: 1}
-  m_LocalPosition: {x: 5.63, y: 1.95, z: 0}
-  m_LocalScale: {x: 0.36992425, y: 0.36992425, z: 0.36992425}
+  m_LocalRotation: {x: -0, y: -0, z: 0.00017452026, w: 1}
+  m_LocalPosition: {x: -0.028742015, y: 0.05943548, z: 0}
+  m_LocalScale: {x: 1.0632632, y: 0.9161076, z: 0.91610754}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_Father: {fileID: 2073547835}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0.02}
 --- !u!235 &1384855623
 WheelJoint2D:
@@ -721,7 +721,7 @@ GameObject:
   - component: {fileID: 1677452887}
   - component: {fileID: 1677452886}
   - component: {fileID: 1677452885}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -741,12 +741,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   facingRight: 1
-  maxSpeed: 10
-  jumpForce: 400
-  airControl: 1
-  whatIsGround:
+  platformLayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 64
+  maxSpeed: 10
+  jumpForce: 1000
+  airControl: 1
+  maxJump: 1
 --- !u!70 &1677452886
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -776,9 +777,9 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
+  m_LinearDrag: 2.04
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 5
   m_Material: {fileID: 0}
   m_Interpolate: 1
   m_SleepingMode: 1
@@ -1114,9 +1115,10 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 5.64, y: 1.926, z: 0}
   m_LocalScale: {x: 0.34791407, y: 0.4038, z: 0.4038}
-  m_Children: []
+  m_Children:
+  - {fileID: 1384855622}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2104095038
 GameObject:
@@ -1129,7 +1131,7 @@ GameObject:
   - component: {fileID: 2104095042}
   - component: {fileID: 2104095041}
   - component: {fileID: 2104095039}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}

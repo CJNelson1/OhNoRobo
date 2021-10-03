@@ -40,6 +40,7 @@
      <Compile Include="Assets\Scripts\FightView.cs" />
      <Compile Include="Assets\Scripts\CharacterControl.cs" />
      <Compile Include="Assets\Scripts\LittleRobo.cs" />
+     <Compile Include="Assets\Scripts\Heart.cs" />
     <Reference Include="UnityEngine">
         <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.19f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
     </Reference>
