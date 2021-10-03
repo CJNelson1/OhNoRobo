@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class MapView : MonoBehaviour
 {
+    public bool headOk;
+    public bool leftArmOk;
+    public bool rightArmOk;
+
     // Start is called before the first frame update
     void Start()
     {

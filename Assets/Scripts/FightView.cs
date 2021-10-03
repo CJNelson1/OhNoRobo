@@ -24,7 +24,6 @@ public class FightView : MonoBehaviour
             // It's the final count down...
             if (timeRemaining > 0)
             {
-                Debug.Log("One second has passed tho.");
                 timeRemaining -= Time.deltaTime;
             }
             else 
