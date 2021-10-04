@@ -50,3 +50,12 @@ TagManager:
   - name: Player
     uniqueID: 2498242475
     locked: 0
+  - name: InFrontGround
+    uniqueID: 45882575
+    locked: 0
+  - name: Cover
+    uniqueID: 2411867341
+    locked: 0
+  - name: UI
+    uniqueID: 3703024767
+    locked: 0

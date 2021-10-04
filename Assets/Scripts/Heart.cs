@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class Heart : MonoBehaviour
 {
-    public bool collidingWithCharacter;
-    public Rigidbody2D rb;
-    public static float torqueDelta = 4f;
+    private bool collidingWithCharacter;
+    private Rigidbody2D rb;
+    [SerializeField] public float torqueDelta = 20f;
+    private float timeSinceTouch = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -22,50 +23,81 @@ public class Heart : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!collidingWithCharacter) 
+        timeSinceTouch += Time.deltaTime;
+        if (timeSinceTouch > 0.5)
         {
-            float rotation = transform.eulerAngles.z;
+            if (!collidingWithCharacter) 
+            {
+                torqueUp();
+            }
+        }
 
-            if (rotation > 10f && rotation < 45f)
-            {
-                rb.AddTorque(-torqueDelta);
-            }
-            else if (rotation > 45f && rotation < 80f)
-            {
-                rb.AddTorque(torqueDelta);
-            }
-            else if (rotation > 100f && rotation < 135f)
-            {
-                rb.AddTorque(-torqueDelta);
-            }
-            else if (rotation > 135f && rotation < 170f)
-            {
-                rb.AddTorque(torqueDelta);
-            }
-            else if (rotation > 190f && rotation < 225f)
-            {
-                rb.AddTorque(-torqueDelta);
-            }
-            else if (rotation > 225f && rotation < 260f)
-            {
-                rb.AddTorque(torqueDelta);
-            }
-            else if (rotation > 280f && rotation < 315f)
-            {
-                rb.AddTorque(-torqueDelta);
-            }
-            else if (rotation > 315f && rotation < 350f)
-            {
-                rb.AddTorque(torqueDelta);
-            }
-            else 
-            {
-                // Slow down
-                rb.AddTorque(rb.angularVelocity * -0.2f);
+        // Reset player choice on the FightView
+        checkPlayerChoice();
+    }
 
-                // Reset player choice on the FightView
-                // TODO
-            }
+    private void checkPlayerChoice()
+    {
+        float rotation = transform.eulerAngles.z;
+
+        if (rotation >= 45f && rotation < 135f)
+        {
+            FightView.fightInstance.nextGoodAction = FightView.RobotAction.PunchRightArm;
+        }
+        else if (rotation >= 135f && rotation < 225f)
+        {
+            FightView.fightInstance.nextGoodAction = FightView.RobotAction.LaserHead;
+        }
+        else if (rotation >= 225f && rotation < 315f)
+        {
+            FightView.fightInstance.nextGoodAction = FightView.RobotAction.SpecialLeftArm;
+        }
+        else if (rotation >= 315f || rotation < 45f)
+        {
+            FightView.fightInstance.nextGoodAction = FightView.RobotAction.NullPosition;
+        }
+    }
+
+    private void torqueUp()
+    {
+        float rotation = transform.eulerAngles.z;
+
+        if (rotation > 3f && rotation < 45f)
+        {
+            rb.AddTorque(-torqueDelta);
+        }
+        else if (rotation > 45f && rotation < 87f)
+        {
+            rb.AddTorque(torqueDelta);
+        }
+        else if (rotation > 93f && rotation < 135f)
+        {
+            rb.AddTorque(-torqueDelta);
+        }
+        else if (rotation > 135f && rotation < 177f)
+        {
+            rb.AddTorque(torqueDelta);
+        }
+        else if (rotation > 183f && rotation < 225f)
+        {
+            rb.AddTorque(-torqueDelta);
+        }
+        else if (rotation > 225f && rotation < 267f)
+        {
+            rb.AddTorque(torqueDelta);
+        }
+        else if (rotation > 273f && rotation < 315f)
+        {
+            rb.AddTorque(-torqueDelta);
+        }
+        else if (rotation > 315f && rotation < 357f)
+        {
+            rb.AddTorque(torqueDelta);
+        }
+        else 
+        {
+            // Slow down
+            rb.AddTorque(rb.angularVelocity * -0.25f);
         }
     }
 
@@ -80,6 +112,8 @@ public class Heart : MonoBehaviour
 
     void OnCollisionExit2D(Collision2D col) 
     {
+        timeSinceTouch = 0;
+
         // When target is stop hit
         if(col.gameObject.tag == "Player")
         {

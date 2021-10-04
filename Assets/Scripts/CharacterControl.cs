@@ -14,30 +14,42 @@ public class CharacterControl : MonoBehaviour
 
 
     private CapsuleCollider2D capsuleCollider2d;
+    public Animator animator;
     private bool jump;
-    private int jumpCount;
+    public int jumpCount;
+
+    private float timeRemaining = 3f;
+
+    public bool grounded;
+    public bool disabled;
 
     private void Awake()
     {
-        // Setting up references.
+        // Setting up references
         capsuleCollider2d = transform.GetComponent<CapsuleCollider2D>();
         jumpCount = maxJump;
+        disabled = false;
     }
-
 
     private void Update()
     {
+        float h = Input.GetAxis("Horizontal");
+        animator.SetFloat("Speed", Mathf.Abs(h));
+        animator.SetFloat("Vertical", GetComponent<Rigidbody2D>().velocity.y);
+        if(disabled)
+        {
+            animator.SetBool("Shocked", true);
+            DisabledTimer();
+        }
+        else
+        {
+            animator.SetBool("Shocked", false);
+        }
         if(!jump)
         {
             // Read the jump input in Update so button presses aren't missed.
             jump = Input.GetButtonDown("Jump");
         }
-
-    }
-
-    private void FixedUpdate() 
-    {
-        float h = Input.GetAxis("Horizontal");
         // Pass all parameters to the character control script.
         this.Move(h, jump);
         jump = false;
@@ -45,10 +57,9 @@ public class CharacterControl : MonoBehaviour
 
     public void Move(float move, bool jump)
     {
-        bool grounded = IsGrounded();
-        if (grounded) jumpCount = maxJump;
+        grounded = IsGrounded();
         //only control the player if grounded or airControl is turned on
-        if (grounded || airControl)
+        if ((grounded || airControl) && !disabled)
         {
             // Move the character
             GetComponent<Rigidbody2D>().velocity = new Vector2(move*maxSpeed, GetComponent<Rigidbody2D>().velocity.y);
@@ -63,7 +74,7 @@ public class CharacterControl : MonoBehaviour
                 Flip();
         }
         // If the player should jump...
-        if (jump && grounded)
+        if (jump && IsGrounded())
         {
             // Add a vertical force to the player.
             GetComponent<Rigidbody2D>().AddForce(new Vector2(0f, jumpForce));
@@ -74,13 +85,28 @@ public class CharacterControl : MonoBehaviour
             GetComponent<Rigidbody2D>().AddForce(new Vector2(0f, jumpForce));
             jumpCount -= 1;
         }
+        //if (grounded) jumpCount = maxJump;
     }
-
+    public void SetDisabled(bool disable) 
+    {
+        disabled = disable;
+    }
+    public void DisabledTimer()
+    {
+        if (timeRemaining > 0)
+        {
+            timeRemaining -= Time.deltaTime;
+        }
+        else 
+        {
+            timeRemaining = 3f;
+            SetDisabled(false);
+        }
+    }
     private bool IsGrounded()
     {
-        float extraHeightHit = .1f;
-        RaycastHit2D raycastHit = Physics2D.BoxCast(capsuleCollider2d.bounds.center, capsuleCollider2d.bounds.size, 0f, Vector2.down, extraHeightHit, platformLayerMask);
-
+        float extraHeightHit = 1f;
+        RaycastHit2D raycastHit = Physics2D.BoxCast(capsuleCollider2d.bounds.center, new Vector2(capsuleCollider2d.bounds.size.x/2, capsuleCollider2d.bounds.size.y/2), 0f, Vector2.down, extraHeightHit, platformLayerMask);
         return raycastHit.collider != null;
     }
 

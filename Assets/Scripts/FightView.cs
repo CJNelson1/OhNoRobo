@@ -3,18 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 public class FightView : MonoBehaviour
 {
-    private System.Random seed;
     public static FightView fightInstance;
+    public HealthBar mrGoodBar;
+    public HealthBar mrBadBar;
+    private System.Random seed;
 
     // Timer stuff
-    public float timeRemaining = 120;
-    public bool timerIsRunning = false;
-    public Text timeText;
-    public float secondTicker = 0;
-    public int numSeconds = 0;
+    public TextMeshProUGUI timeText;
+    private float timeRemaining = 120;
+    private bool timerIsRunning = false;
+    private float secondTicker = 0;
+    private int numSeconds = 0;
+
+    // Trouble on every other action/move
+    private bool alternateActionFlag = false;
 
     // Felt cute, might delete later
     public enum RobotAction
@@ -27,11 +34,11 @@ public class FightView : MonoBehaviour
 
     // Enemy robot stuff
     public RobotAction nextEnemyAction;
-    public int enemyHealth;
+    public int enemyHealth = 3;
 
     // Good robot stuff
     public RobotAction nextGoodAction;
-    public int goodHealth;
+    public int goodHealth = 3;
 
     // This is a persistant manager so we're using awake instead of start
     void Awake()
@@ -47,9 +54,9 @@ public class FightView : MonoBehaviour
 
             // Instantiate robos
             nextEnemyAction = RobotAction.LaserHead;
-            enemyHealth = 100;
+            enemyHealth = 3;
             nextGoodAction = RobotAction.LaserHead;
-            goodHealth = 100;
+            goodHealth = 3;
         }
         else
         {
@@ -72,8 +79,6 @@ public class FightView : MonoBehaviour
                 secondTicker += Time.deltaTime;
                 if (secondTicker > 1)
                 {
-                    // Debug print every second for test purposes
-                    Debug.Log("It's been " + numSeconds + " seconds :)");
                     secondTicker = 0;
                     numSeconds++;
 
@@ -93,7 +98,7 @@ public class FightView : MonoBehaviour
         float minutes = Mathf.FloorToInt(timeToDisplay / 60);  
         float seconds = Mathf.FloorToInt(timeToDisplay % 60);
 
-        timeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        timeText.text = string.Format("{0:0}:{1:00}", minutes, seconds);
     }
 
     #region Fighting Words
@@ -110,13 +115,11 @@ public class FightView : MonoBehaviour
         
         if (nextGoodAction == RobotAction.NullPosition)
         {
-            // Always lose
+            // The only way to lose is to not play
             Debug.Log("Boi watchu doin?");
             ResolveRoundLoss();
         }
-
-        // Punch beats head, head beats special, special beats punch
-        if (nextGoodAction == nextEnemyAction) 
+        else if (nextGoodAction == nextEnemyAction) 
         {
             // Tie
             Debug.Log("It's a draw");
@@ -124,7 +127,7 @@ public class FightView : MonoBehaviour
         }
         else
         {
-            // Not tie
+            // Punch beats head, head beats special, special beats punch
             if (nextGoodAction == RobotAction.PunchRightArm)
             {
                 Debug.Log("Good boi punch");
@@ -141,7 +144,6 @@ public class FightView : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("wat");
                     ResolveRoundWat();
                 }
             }
@@ -161,7 +163,6 @@ public class FightView : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("wat");
                     ResolveRoundWat();
                 }
             }
@@ -181,28 +182,24 @@ public class FightView : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("wat");
                     ResolveRoundWat();
                 }
             }
             else
             {
-                Debug.Log("wat");
                 ResolveRoundWat();
             }
         }
 
-        // Reset timer
+        // Reset timer and other new round stuff
         timeRemaining = 120;
         timerIsRunning = true;
+        alternateActionFlag = !alternateActionFlag;
     }
 
     private void ResolveRoundTie()
     {
         Debug.Log("Resolve Round Tie");
-
-        goodHealth -= 10;
-        enemyHealth -= 10;
 
         FinishRound();
     }
@@ -211,8 +208,9 @@ public class FightView : MonoBehaviour
     {
         Debug.Log("Resolve Round Win");
 
-        enemyHealth -= 20;
+        enemyHealth -= 1;
 
+        mrBadBar.SetHealth(enemyHealth);
         FinishRound();
     }
 
@@ -220,26 +218,25 @@ public class FightView : MonoBehaviour
     {
         Debug.Log("Resolve Round Loss");
 
-        goodHealth -= 20;
+        goodHealth -= 1;
 
+        mrGoodBar.SetHealth(goodHealth);
         FinishRound();
     }
 
     private void ResolveRoundWat()
     {
-        // Display Scene Bugsplat lol
+        Debug.Log("wat " + nextGoodAction + " " + nextEnemyAction);
+        // SceneManager.LoadScene("Bugsplat_lmao");
     }
 
     private void FinishRound()
     {
-        // Make something unstable???
-        /* Working on it in the morning -- 
-            make (object) unstable (things at random?) if - good robot lost the action
-            every other action that occurs
-            notify unstable chances to the Map to keep a track
-
+        MakeUnstable(); //if lost make something unstable or every alternate action, make something unstable
             
-        */
+        if(alternateActionFlag == true){
+            alternateActionFlag = false; //Set action flag back to false, continue game.
+        }
 
         CheckGameOver();
 
@@ -252,11 +249,13 @@ public class FightView : MonoBehaviour
         if (enemyHealth <= 0)
         {
             GameOverWin();
+            // SceneManager.LoadScene("Win");
         }
 
         if (goodHealth <= 0)
         {
             GameOverLose();
+            // SceneManager.LoadScene("Lose");
         }
     }
 
@@ -287,6 +286,38 @@ public class FightView : MonoBehaviour
         else 
         {
             nextEnemyAction = RobotAction.PunchRightArm;
+        }
+
+        Debug.Log("Next enemy action is " + nextEnemyAction);
+    }
+
+    private void MakeUnstable() 
+    {
+        // Get MapView Instance to keep track of instable parts
+        MapView mapInstance = MapView.mapInstance;
+        
+        // Randomly choose a part to go unstable
+        // Head=1, LeftArm=2, RightArm=3
+        int randomChoice = seed.Next(1,4);
+
+        Debug.Log("Random instability value is " + randomChoice);
+
+        // Ben says: Sayali, I moved your code into MapView
+        switch (randomChoice)
+        {
+            case 1: // Head
+                mapInstance.makeHeadUnstable();
+                break;
+
+            case 2: // Left Arm
+                mapInstance.makeLeftArmUnstable();     
+                break;
+
+            case 3: // Right Arm
+                mapInstance.makeRightArmUnstable();
+                break;
+
+            default: break;
         }
     }
 }
