@@ -6,14 +6,28 @@ public class ElectroPlat : MonoBehaviour
 {
 
     public CharacterControl cc;
+    public CapsuleCollider2D player;
     public bool isElectrified;
+    private SpriteRenderer sr;
     public Sprite neutralPlat;
     public Sprite electricPlat;
-    public BoxCollider2D shockArea;
+    public BoxCollider2D platform;
+    private float warningTime = 2f;
+    private float electricTime = 2.5f;
+    private float cooldown = 4f;
+    public FightView fv;
+    private bool waiting;
+    private bool warning;
+    private bool electrify;
+    private int seedNumber = 0;
     
     void Start()
     {
         isElectrified = false;
+        waiting = false;
+        warning = false;
+        electrify = false;
+        sr = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
@@ -21,22 +35,36 @@ public class ElectroPlat : MonoBehaviour
     {
         if(isElectrified)
         {
-            gameObject.GetComponent<SpriteRenderer>().sprite = electricPlat;
-            shockArea.enabled = true;
+            if(platform.IsTouching(player))
+            {
+                DisableCharacter();
+            }
+            electricTime -= Time.deltaTime;
+            if (electricTime < 0)
+            {
+                NeutralizePlatform();
+            }
         }
-        else
+        if (waiting)
         {
-            gameObject.GetComponent<SpriteRenderer>().sprite = neutralPlat;
-            shockArea.enabled = true;
+            cooldown -= Time.deltaTime;
+            if (cooldown <= 0)
+            {
+                waiting = false;
+                cooldown = 4f;
+            }
         }
-    }
-
-    void OnTriggerEnter2D(Collider2D other) 
-    {
-        // When target is hit
-        if (other.gameObject.tag == "Player" && isElectrified)
+        else if(!isElectrified)
         {
-            DisableCharacter();
+            CheckForElectricity();
+        }
+        if (warning)
+        {
+            ShowDanger();
+        }
+        if(electrify)
+        {
+            ElectrifyPlatform();
         }
     }
 
@@ -47,7 +75,46 @@ public class ElectroPlat : MonoBehaviour
 
     public void ElectrifyPlatform()
     {
-        gameObject.GetComponent<SpriteRenderer>().color = Color.red;
+        gameObject.GetComponent<SpriteRenderer>().sprite = electricPlat;
+
+        electrify = false;
         isElectrified = true;
+    }
+    public void NeutralizePlatform()
+    {
+        gameObject.GetComponent<SpriteRenderer>().sprite = neutralPlat;
+        gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+        isElectrified = false;
+        electricTime = 2.5f;
+        waiting = true;
+    }
+    public void ShowDanger()
+    {
+        if (warningTime > 0)
+        {
+            warningTime -= Time.deltaTime;
+            if (Mathf.FloorToInt(warningTime * 4) % 2 == 1)
+            {
+                sr.color = Color.red;
+            }
+            else
+            {
+                sr.color = Color.white;
+            }
+        }
+        else 
+        {
+            warning = false;
+            electrify = true;
+            warningTime = 2f;
+        }
+    }
+    private void CheckForElectricity()
+    {
+        seedNumber = fv.seed.Next(100);
+        if (seedNumber >= 99)
+        {
+            warning = true;
+        }
     }
 }

@@ -36,6 +36,14 @@ public class CharacterControl : MonoBehaviour
         float h = Input.GetAxis("Horizontal");
         animator.SetFloat("Speed", Mathf.Abs(h));
         animator.SetFloat("Vertical", GetComponent<Rigidbody2D>().velocity.y);
+        if(!jump)
+        {
+            // Read the jump input in Update so button presses aren't missed.
+            jump = Input.GetButtonDown("Jump");
+        }
+        // Pass all parameters to the character control script.
+        this.Move(h, jump);
+        jump = false;
         if(disabled)
         {
             animator.SetBool("Shocked", true);
@@ -45,14 +53,6 @@ public class CharacterControl : MonoBehaviour
         {
             animator.SetBool("Shocked", false);
         }
-        if(!jump)
-        {
-            // Read the jump input in Update so button presses aren't missed.
-            jump = Input.GetButtonDown("Jump");
-        }
-        // Pass all parameters to the character control script.
-        this.Move(h, jump);
-        jump = false;
     }
 
     public void Move(float move, bool jump)

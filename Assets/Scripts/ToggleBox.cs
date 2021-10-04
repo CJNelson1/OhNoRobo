@@ -16,17 +16,6 @@ public class ToggleBox : MonoBehaviour
         bad = true;
     }
 
-    void Awake() 
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void makeBad()
     {
         bad = true;

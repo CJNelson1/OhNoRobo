@@ -7,6 +7,7 @@ public class BigBrain : MonoBehaviour
     public RectTransform rt;
     public int currentBrain;
     public int maxBrain = 8;
+    public FightView fv;
     // Start is called before the first frame update
     void Start()
     {
@@ -18,10 +19,12 @@ public class BigBrain : MonoBehaviour
         currentBrain++;
         float scaleLevel = ((currentBrain*1f)/(maxBrain*1f)) * 10;
         rt.localScale = new Vector3(6.3430f, scaleLevel, 1f);
+        fv.HeadCharge++;
     }
     public void ResetLevel()
     {
         currentBrain = 0;
         rt.localScale = new Vector3(6.3430f, currentBrain, 1f);
+        fv.HeadCharge = 0;
     }
 }

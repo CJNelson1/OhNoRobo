@@ -6,8 +6,9 @@ public class Heart : MonoBehaviour
 {
     private bool collidingWithCharacter;
     private Rigidbody2D rb;
-    [SerializeField] public float torqueDelta = 20f;
+    [SerializeField] public float torqueDelta = 40f;
     private float timeSinceTouch = 0;
+    public GoodGuyDisplay ggd;
 
     // Start is called before the first frame update
     void Start()
@@ -43,18 +44,22 @@ public class Heart : MonoBehaviour
         if (rotation >= 45f && rotation < 135f)
         {
             FightView.fightInstance.nextGoodAction = FightView.RobotAction.PunchRightArm;
+            ggd.UpdateSprite(2);
         }
         else if (rotation >= 135f && rotation < 225f)
         {
             FightView.fightInstance.nextGoodAction = FightView.RobotAction.LaserHead;
+            ggd.UpdateSprite(1);
         }
         else if (rotation >= 225f && rotation < 315f)
         {
             FightView.fightInstance.nextGoodAction = FightView.RobotAction.SpecialLeftArm;
+            ggd.UpdateSprite(3);
         }
         else if (rotation >= 315f || rotation < 45f)
         {
             FightView.fightInstance.nextGoodAction = FightView.RobotAction.NullPosition;
+            ggd.UpdateSprite(0);
         }
     }
 

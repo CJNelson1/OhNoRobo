@@ -11,7 +11,7 @@ public class FightView : MonoBehaviour
     public static FightView fightInstance;
     public HealthBar mrGoodBar;
     public HealthBar mrBadBar;
-    private System.Random seed;
+    public System.Random seed;
 
     // Timer stuff
     public TextMeshProUGUI timeText;
@@ -35,10 +35,26 @@ public class FightView : MonoBehaviour
     // Enemy robot stuff
     public RobotAction nextEnemyAction;
     public int enemyHealth = 3;
+    public BadGuyDisplay bgd;
 
     // Good robot stuff
     public RobotAction nextGoodAction;
     public int goodHealth = 3;
+    public GoodGuyDisplay ggd;
+
+    // Charge Levels
+    public int HeadCharge = 0;
+    public int HeadChargeMax = 8;
+    public BigBrain bb;
+    public ToggleBox[] headToggles = new ToggleBox[8];
+    public int LeftArmCharge = 0;
+    public int LeftArmChargeMax = 3;
+    public BigLeft left;
+    public LeftArmToggles[] leftToggles = new LeftArmToggles[3];
+    public int RightArmCharge = 0;
+    public int RightArmChargeMax = 2;
+    public BigRight right;
+    public RightArmToggles[] rightToggles = new RightArmToggles[2];
 
     // This is a persistant manager so we're using awake instead of start
     void Awake()
@@ -54,6 +70,7 @@ public class FightView : MonoBehaviour
 
             // Instantiate robos
             nextEnemyAction = RobotAction.LaserHead;
+            bgd.UpdateSprite(1);
             enemyHealth = 3;
             nextGoodAction = RobotAction.LaserHead;
             goodHealth = 3;
@@ -110,79 +127,104 @@ public class FightView : MonoBehaviour
     }
 
     private void ResolveRound()
-    {
-        Debug.Log("Do a hit.");
-        
+    {    
         if (nextGoodAction == RobotAction.NullPosition)
         {
-            // The only way to lose is to not play
-            Debug.Log("Boi watchu doin?");
-            ResolveRoundLoss();
+            ResolveRoundWat();
         }
         else if (nextGoodAction == nextEnemyAction) 
         {
-            // Tie
-            Debug.Log("It's a draw");
-            ResolveRoundTie();
+            if(CheckCharge(nextGoodAction))
+            {
+                switch (nextGoodAction)
+                {
+                    case RobotAction.LaserHead:
+                        ResetHeadToggles();
+                        break;
+                    case RobotAction.SpecialLeftArm:
+                        ResetLeftArmToggles();
+                        break;
+                    case RobotAction.PunchRightArm:
+                        ResetRightArmToggles();
+                        break;
+                }
+                ResolveRoundTie();
+            }
+            else
+            {
+                ResolveRoundLoss();
+            }
         }
         else
         {
             // Punch beats head, head beats special, special beats punch
             if (nextGoodAction == RobotAction.PunchRightArm)
             {
-                Debug.Log("Good boi punch");
-
                 if (nextEnemyAction == RobotAction.LaserHead)
                 {
-                    Debug.Log("Bad boi laser");
-                    ResolveRoundWin();
-                }
-                else if (nextEnemyAction == RobotAction.SpecialLeftArm)
-                {
-                    Debug.Log("Bad boi special");
-                    ResolveRoundLoss();
+                    if(CheckCharge(RobotAction.PunchRightArm))
+                    {
+                        ResetRightArmToggles();
+                        ResolveRoundWin();
+                    }
+                    else
+                    {
+                        ResolveRoundLoss();
+                    }
                 }
                 else
                 {
-                    ResolveRoundWat();
+                    if(CheckCharge(RobotAction.PunchRightArm))
+                    {
+                        ResetRightArmToggles();
+                    }
+                    ResolveRoundLoss();
                 }
             }
             else if (nextGoodAction == RobotAction.LaserHead)
             {
-                Debug.Log("Good boi laser");
-
-                if (nextEnemyAction == RobotAction.PunchRightArm)
+                if (nextEnemyAction == RobotAction.SpecialLeftArm)
                 {
-                    Debug.Log("Bad boi punch");
-                    ResolveRoundLoss();
-                }
-                else if (nextEnemyAction == RobotAction.SpecialLeftArm)
-                {
-                    Debug.Log("Bad boi special");
-                    ResolveRoundWin();
+                    if(CheckCharge(RobotAction.LaserHead))
+                    {
+                        ResetHeadToggles();
+                        ResolveRoundWin();
+                    }
+                    else
+                    {
+                        ResolveRoundLoss();
+                    }
                 }
                 else
                 {
-                    ResolveRoundWat();
+                    if(CheckCharge(RobotAction.LaserHead))
+                    {
+                        ResetHeadToggles();
+                    }
+                    ResolveRoundLoss();
                 }
             }
             else if (nextGoodAction == RobotAction.SpecialLeftArm)
             {
-                Debug.Log("Good boi special");
-
-                if (nextEnemyAction == RobotAction.LaserHead)
+                if (nextEnemyAction == RobotAction.PunchRightArm)
                 {
-                    Debug.Log("Bad boi laser");
-                    ResolveRoundLoss();
-                }
-                else if (nextEnemyAction == RobotAction.PunchRightArm)
-                {
-                    Debug.Log("Bad boi punch");
-                    ResolveRoundWin();
+                    if(CheckCharge(RobotAction.SpecialLeftArm))
+                    {
+                        ResetLeftArmToggles();
+                        ResolveRoundWin();
+                    }
+                    else
+                    {
+                        ResolveRoundLoss();
+                    }
                 }
                 else
                 {
-                    ResolveRoundWat();
+                    if(CheckCharge(RobotAction.SpecialLeftArm))
+                    {
+                        ResetLeftArmToggles();
+                    }
+                    ResolveRoundLoss();
                 }
             }
             else
@@ -190,17 +232,64 @@ public class FightView : MonoBehaviour
                 ResolveRoundWat();
             }
         }
+        if(nextGoodAction == RobotAction.LaserHead)
+        {
+            bb.ResetLevel();
+        }
+        else if (nextGoodAction == RobotAction.PunchRightArm)
+        {
 
+        }
+        else if (nextGoodAction == RobotAction.SpecialLeftArm)
+        {
+
+        }
         // Reset timer and other new round stuff
         timeRemaining = 120;
         timerIsRunning = true;
         alternateActionFlag = !alternateActionFlag;
     }
 
+    private bool CheckCharge(RobotAction roboAction)
+    {
+        switch (roboAction)
+        {
+            case RobotAction.LaserHead:
+                if (HeadCharge / HeadChargeMax == 1)
+                {
+                    return true;
+                }
+                else 
+                {
+                    return false;
+                }
+            case RobotAction.SpecialLeftArm:
+                if (LeftArmCharge / LeftArmChargeMax == 1)
+                {
+                    return true;
+                }
+                else 
+                {
+                    return false;
+                }
+            case RobotAction.PunchRightArm:
+                if (RightArmCharge / RightArmChargeMax == 1)
+                {
+                    return true;
+                }
+                else 
+                {
+                    return false;
+                }
+            default:
+                return true;
+        }
+    }
     private void ResolveRoundTie()
     {
         Debug.Log("Resolve Round Tie");
 
+        bgd.TiePose();
         FinishRound();
     }
 
@@ -208,6 +297,7 @@ public class FightView : MonoBehaviour
     {
         Debug.Log("Resolve Round Win");
 
+        bgd.DamagePose();
         enemyHealth -= 1;
 
         mrBadBar.SetHealth(enemyHealth);
@@ -217,7 +307,8 @@ public class FightView : MonoBehaviour
     private void ResolveRoundLoss()
     {
         Debug.Log("Resolve Round Loss");
-
+        
+        ggd.DamagePose();
         goodHealth -= 1;
 
         mrGoodBar.SetHealth(goodHealth);
@@ -248,14 +339,12 @@ public class FightView : MonoBehaviour
         // Big winner?
         if (enemyHealth <= 0)
         {
-            GameOverWin();
-            // SceneManager.LoadScene("Win");
+            SceneManager.LoadScene(sceneName:"Victory");
         }
 
         if (goodHealth <= 0)
         {
-            GameOverLose();
-            // SceneManager.LoadScene("Lose");
+            SceneManager.LoadScene(sceneName:"Defeat");
         }
     }
 
@@ -278,16 +367,18 @@ public class FightView : MonoBehaviour
         if (temp == 1)
         {
             nextEnemyAction = RobotAction.LaserHead;
+            bgd.UpdateSprite(temp);
         }
         else if (temp == 2)
         {
             nextEnemyAction = RobotAction.SpecialLeftArm;
+            bgd.UpdateSprite(temp);
         }
         else 
         {
             nextEnemyAction = RobotAction.PunchRightArm;
+            bgd.UpdateSprite(3);
         }
-
         Debug.Log("Next enemy action is " + nextEnemyAction);
     }
 
@@ -319,5 +410,29 @@ public class FightView : MonoBehaviour
 
             default: break;
         }
+    }
+    private void ResetHeadToggles()
+    {
+        for(int i = 0; i < 8; i++)
+        {
+            headToggles[i].makeBad();
+        }
+        bb.ResetLevel();
+    }
+    private void ResetRightArmToggles()
+    {
+        foreach(RightArmToggles toggles in rightToggles)
+        {
+            toggles.makeBad();
+        }
+        right.ResetLevel();
+    }
+    private void ResetLeftArmToggles()
+    {
+        foreach(LeftArmToggles toggles in leftToggles)
+        {
+            toggles.makeBad();
+        }
+        left.ResetLevel();
     }
 }
