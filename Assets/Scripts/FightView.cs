@@ -80,7 +80,6 @@ public class FightView : MonoBehaviour
             Destroy(gameObject);
         }
 
-        DontDestroyOnLoad(gameObject);
     }
 
     // Update is called once per frame
